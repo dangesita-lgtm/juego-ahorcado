@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ahorcado Tech en Español</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0f172a, #1e3a8a, #312e81);
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 950px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 28px;
+      padding: 30px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+      background: linear-gradient(90deg, #38bdf8, #f472b6, #facc15);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #dbeafe;
+      margin-bottom: 25px;
+      font-size: 1rem;
+    }
+
+    .game-area {
+      display: grid;
+      grid-template-columns: 1fr 1.2fr;
+      gap: 30px;
+      align-items: center;
+    }
+
+    .hangman-box {
+      background: rgba(15, 23, 42, 0.72);
+      border-radius: 22px;
+      padding: 25px;
+      text-align: center;
+      min-height: 390px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    svg {
+      width: 100%;
+      max-width: 280px;
+      height: 300px;
+      margin: 0 auto;
+    }
+
+    .line {
+      stroke: #e5e7eb;
+      stroke-width: 6;
+      stroke-linecap: round;
+      fill: none;
+    }
+
+    .person {
+      stroke: #facc15;
+      stroke-width: 5;
+      stroke-linecap: round;
+      fill: none;
+      display: none;
+    }
+
+    .wrong-count {
+      margin-top: 15px;
+      font-size: 1.1rem;
+      color: #fecaca;
+      font-weight: 600;
+    }
+
+    .content {
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 22px;
+      padding: 25px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .category {
+      text-align: center;
+      margin-bottom: 18px;
+      color: #bfdbfe;
+      font-size: 1rem;
+    }
+
+    .word {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 25px 0;
+      min-height: 60px;
+    }
+
+    .letter-box {
+      width: 42px;
+      height: 52px;
+      border-bottom: 4px solid #38bdf8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      font-weight: bold;
+      text-transform: uppercase;
+      color: white;
+    }
+
+    .keyboard {
+      display: grid;
+      grid-template-columns: repeat(9, 1fr);
+      gap: 8px;
+      margin-top: 20px;
+    }
+
+    .key {
+      padding: 12px 0;
+      border: none;
+      border-radius: 12px;
+      background: #e0f2fe;
+      color: #0f172a;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s;
+      font-size: 1rem;
+    }
+
+    .key:hover {
+      transform: translateY(-2px);
+      background: #7dd3fc;
+    }
+
+    .key.correct {
+      background: #86efac;
+      color: #14532d;
+      cursor: not-allowed;
+    }
+
+    .key.wrong {
+      background: #fca5a5;
+      color: #7f1d1d;
+      cursor: not-allowed;
+    }
+
+    .key:disabled {
+      opacity: 0.8;
+      cursor: not-allowed;
+    }
+
+    .message {
+      text-align: center;
+      margin-top: 22px;
+      font-size: 1.2rem;
+      font-weight: 700;
+      min-height: 35px;
+      color: #ffffff;
+    }
+
+    .hint {
+      margin-top: 12px;
+      padding: 14px;
+      background: rgba(56, 189, 248, 0.13);
+      border-radius: 14px;
+      color: #e0f2fe;
+      font-size: 0.95rem;
+      line-height: 1.4;
+    }
+
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 24px;
+    }
+
+    button.action {
+      border: none;
+      padding: 13px 20px;
+      border-radius: 14px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      background: linear-gradient(135deg, #38bdf8, #ec4899);
+      color: white;
+      box-shadow: 0 10px 25px rgba(236, 72, 153, 0.35);
+      transition: 0.2s;
+    }
+
+    button.action:hover {
+      transform: translateY(-2px);
+    }
+
+    .scoreboard {
+      display: flex;
+      justify-content: space-around;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .score {
+      background: rgba(255, 255, 255, 0.12);
+      padding: 12px 16px;
+      border-radius: 14px;
+      min-width: 120px;
+      text-align: center;
+      font-size: 0.9rem;
+    }
+
+    .score span {
+      display: block;
+      font-size: 1.5rem;
+      color: #facc15;
+      font-weight: bold;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 20px;
+      color: #cbd5e1;
+      font-size: 0.85rem;
+    }
+
+    @media (max-width: 800px) {
+      .game-area {
+        grid-template-columns: 1fr;
+      }
+
+      .keyboard {
+        grid-template-columns: repeat(7, 1fr);
+      }
+
+      h1 {
+        font-size: 2rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .keyboard {
+        grid-template-columns: repeat(5, 1fr);
+      }
+
+      .letter-box {
+        width: 32px;
+        height: 44px;
+        font-size: 1.5rem;
+      }
+
+      .container {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+    <h1>Ahorcado Tech</h1>
+    <p class="subtitle">
+      Adivina la palabra en español antes de completar el ahorcado.
+    </p>
+
+    <div class="scoreboard">
+      <div class="score">
+        Victorias
+        <span id="wins">0</span>
+      </div>
+      <div class="score">
+        Derrotas
+        <span id="losses">0</span>
+      </div>
+      <div class="score">
+        Intentos restantes
+        <span id="remaining">6</span>
+      </div>
+    </div>
+
+    <div class="game-area">
+
+      <div class="hangman-box">
+        <svg viewBox="0 0 300 300">
+          <!-- Base del ahorcado -->
+          <line x1="50" y1="270" x2="250" y2="270" class="line" />
+          <line x1="90" y1="270" x2="90" y2="40" class="line" />
+          <line x1="90" y1="40" x2="200" y2="40" class="line" />
+          <line x1="200" y1="40" x2="200" y2="75" class="line" />
+
+          <!-- Partes del personaje -->
+          <circle cx="200" cy="95" r="22" class="person" id="part1" />
+          <line x1="200" y1="118" x2="200" y2="180" class="person" id="part2" />
+          <line x1="200" y1="135" x2="165" y2="155" class="person" id="part3" />
+          <line x1="200" y1="135" x2="235" y2="155" class="person" id="part4" />
+          <line x1="200" y1="180" x2="170" y2="225" class="person" id="part5" />
+          <line x1="200" y1="180" x2="230" y2="225" class="person" id="part6" />
+        </svg>
+
+        <div class="wrong-count" id="wrongCount">
+          Errores: 0 de 6
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="category" id="category">
+          Categoría: Tecnología
+        </div>
+
+        <div class="word" id="word"></div>
+
+        <div class="hint" id="hint">
+          Pista: piensa en conceptos actuales del mundo digital.
+        </div>
+
+        <div class="keyboard" id="keyboard"></div>
+
+        <div class="message" id="message"></div>
+
+        <div class="controls">
+          <button class="action" onclick="newGame()">Nueva palabra</button>
+          <button class="action" onclick="showHint()">Ver pista extra</button>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="footer">
+      Proyecto de clase | Juego desarrollado con HTML, CSS y JavaScript
+    </div>
+  </div>
+
+  <script>
+    const words = [
+      {
+        word: "tecnologia",
+        category: "Tecnología",
+        hint: "Conjunto de conocimientos y herramientas que transforman la vida diaria.",
+        extraHint: "Empieza con T y está presente en celulares, computadores e internet."
+      },
+      {
+        word: "internet",
+        category: "Conectividad",
+        hint: "Red global que permite comunicarnos y acceder a información.",
+        extraHint: "Sin esto, no podrías navegar páginas web."
+      },
+      {
+        word: "robotica",
+        category: "Innovación",
+        hint: "Área relacionada con máquinas capaces de realizar tareas.",
+        extraHint: "Se relaciona con robots."
+      },
+      {
+        word: "algoritmo",
+        category: "Programación",
+        hint: "Serie de pasos ordenados para resolver un problema.",
+        extraHint: "Es la lógica detrás de muchas aplicaciones."
+      },
+      {
+        word: "ciberseguridad",
+        category: "Seguridad Digital",
+        hint: "Protege sistemas, datos y redes frente a ataques digitales.",
+        extraHint: "Incluye contraseñas, antivirus y protección de información."
+      },
+      {
+        word: "nube",
+        category: "Servicios Digitales",
+        hint: "Permite guardar información y usar servicios por internet.",
+        extraHint: "También se conoce como cloud."
+      },
+      {
+        word: "datos",
+        category: "Información",
+        hint: "Son la base para analizar, decidir y crear inteligencia artificial.",
+        extraHint: "Pueden ser números, textos, imágenes o registros."
+      },
+      {
+        word: "inteligencia",
+        category: "Inteligencia Artificial",
+        hint: "Capacidad de aprender, razonar o resolver problemas.",
+        extraHint: "Hace parte del nombre completo de la IA."
+      },
+      {
+        word: "aprendizaje",
+        category: "Educación",
+        hint: "Proceso mediante el cual adquirimos conocimiento.",
+        extraHint: "En IA se habla mucho de aprendizaje automático."
+      },
+      {
+        word: "innovacion",
+        category: "Creatividad",
+        hint: "Crear o mejorar soluciones para resolver problemas.",
+        extraHint: "Es clave para transformar empresas y sociedades."
+      },
+      {
+        word: "programacion",
+        category: "Desarrollo",
+        hint: "Actividad de escribir instrucciones para que una máquina las ejecute.",
+        extraHint: "Se hace con lenguajes como JavaScript, Python o HTML."
+      },
+      {
+        word: "satelite",
+        category: "Telecomunicaciones",
+        hint: "Objeto que orbita la Tierra y ayuda en comunicaciones o navegación.",
+        extraHint: "Puede transmitir señales o tomar imágenes del planeta."
+      }
+    ];
+
+    const alphabet = "abcdefghijklmnñopqrstuvwxyz".split("");
+
+    let selectedWord = "";
+    let selectedCategory = "";
+    let selectedHint = "";
+    let selectedExtraHint = "";
+    let guessedLetters = [];
+    let wrongLetters = [];
+    let maxErrors = 6;
+    let wins = 0;
+    let losses = 0;
+    let gameOver = false;
+
+    const wordContainer = document.getElementById("word");
+    const keyboard = document.getElementById("keyboard");
+    const message = document.getElementById("message");
+    const category = document.getElementById("category");
+    const hint = document.getElementById("hint");
+    const wrongCount = document.getElementById("wrongCount");
+    const remaining = document.getElementById("remaining");
+    const winsDisplay = document.getElementById("wins");
+    const lossesDisplay = document.getElementById("losses");
+
+    function normalizeText(text) {
+      return text
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+    }
+
+    function newGame() {
+      const randomIndex = Math.floor(Math.random() * words.length);
+      const selected = words[randomIndex];
+
+      selectedWord = normalizeText(selected.word.toLowerCase());
+      selectedCategory = selected.category;
+      selectedHint = selected.hint;
+      selectedExtraHint = selected.extraHint;
+
+      guessedLetters = [];
+      wrongLetters = [];
+      gameOver = false;
+
+      message.textContent = "";
+      category.textContent = "Categoría: " + selectedCategory;
+      hint.textContent = "Pista: " + selectedHint;
+
+      hideHangman();
+      createKeyboard();
+      updateWord();
+      updateStats();
+    }
+
+    function createKeyboard() {
+      keyboard.innerHTML = "";
+
+      alphabet.forEach(letter => {
+        const button = document.createElement("button");
+        button.textContent = letter.toUpperCase();
+        button.classList.add("key");
+        button.onclick = () => chooseLetter(letter, button);
+        keyboard.appendChild(button);
+      });
+    }
+
+    function chooseLetter(letter, button) {
+      if (gameOver) return;
+
+      guessedLetters.push(letter);
+      button.disabled = true;
+
+      if (selectedWord.includes(letter)) {
+        button.classList.add("correct");
+      } else {
+        wrongLetters.push(letter);
+        button.classList.add("wrong");
+        showHangmanPart();
+      }
+
+      updateWord();
+      updateStats();
+      checkGameStatus();
+    }
+
+    function updateWord() {
+      wordContainer.innerHTML = "";
+
+      selectedWord.split("").forEach(letter => {
+        const box = document.createElement("div");
+        box.classList.add("letter-box");
+
+        if (guessedLetters.includes(letter)) {
+          box.textContent = letter;
+        } else {
+          box.textContent = "";
+        }
+
+        wordContainer.appendChild(box);
+      });
+    }
+
+    function updateStats() {
+      wrongCount.textContent = "Errores: " + wrongLetters.length + " de " + maxErrors;
+      remaining.textContent = maxErrors - wrongLetters.length;
+      winsDisplay.textContent = wins;
+      lossesDisplay.textContent = losses;
+    }
+
+    function showHangmanPart() {
+      const partNumber = wrongLetters.length;
+      const part = document.getElementById("part" + partNumber);
+
+      if (part) {
+        part.style.display = "block";
+      }
+    }
+
+    function hideHangman() {
+      for (let i = 1; i <= maxErrors; i++) {
+        document.getElementById("part" + i).style.display = "none";
+      }
+    }
+
+    function checkGameStatus() {
+      const hasWon = selectedWord
+        .split("")
+        .every(letter => guessedLetters.includes(letter));
+
+      if (hasWon) {
+        message.textContent = "Ganaste. Salvaste al personaje y descubriste la palabra.";
+        wins++;
+        gameOver = true;
+        disableKeyboard();
+        updateStats();
+      }
+
+      if (wrongLetters.length >= maxErrors) {
+        message.textContent = "Perdiste. La palabra era: " + selectedWord.toUpperCase();
+        losses++;
+        gameOver = true;
+        revealWord();
+        disableKeyboard();
+        updateStats();
+      }
+    }
+
+    function revealWord() {
+      guessedLetters = selectedWord.split("");
+      updateWord();
+    }
+
+    function disableKeyboard() {
+      const buttons = document.querySelectorAll(".key");
+      buttons.forEach(button => button.disabled = true);
+    }
+
+    function showHint() {
+      if (!gameOver) {
+        hint.textContent = "Pista extra: " + selectedExtraHint;
+      }
+    }
+
+    newGame();
+  </script>
+
+</body>
+</html>
